@@ -2,7 +2,7 @@
 
 A Chrome extension that puts a thin amber bar next to paragraphs that are *obviously* AI-written. It leaves everything else alone.
 
-Each paragraph gets one call to [TypeSafe](https://typesafe.ai)'s Jev model, a fast and cheap classifier for typed decisions. The call asks whether the passage was written by a human or an AI and returns a probability. A paragraph is marked only when that probability is at least 0.95. At that threshold, the extension catches the ordinary "In today's fast-paced digital landscape…" kind of text and lets careful AI prose through, and it does not flag human writing (see [eval/RESULTS.md](eval/RESULTS.md)).
+Each paragraph gets one call to [TypeSafe](https://typesafe.ai)'s Jev model, a fast and cheap classifier for typed decisions. The call asks whether the passage was written by a human or an AI and returns a probability. A paragraph is marked only when that probability is at least 0.95. On the eval set (2026-09-23), that threshold flagged none of 105 human passages written before ChatGPT and caught 24% of 97 AI passages overall. It caught 44% of plain blog-style AI text and 12–13% of paraphrases and imitations: typical AI prose gets marked, careful AI prose gets through. Details in [eval/RESULTS.md](eval/RESULTS.md).
 
 ```
 extension/   Manifest V3, plain JS, no build step — finds text blocks, marks flagged ones
