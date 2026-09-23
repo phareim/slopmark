@@ -1,0 +1,9 @@
+{
+  "name": "slopmark-server",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node --no-warnings src/server.mjs",
+    "test": "node --no-warnings --test test/*.test.mjs"
+  }
+}

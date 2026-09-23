@@ -1,0 +1,30 @@
+/* The mark: a thin amber bar in the left margin of a flagged block, plus a faint tint on hover.
+   :where() keeps specificity at zero, so a page's own position rules always win; position:
+   relative on a static element changes nothing visible and anchors the bar. */
+:where([data-slopmark="flag"]) {
+  position: relative;
+  transition: background-color 150ms ease;
+}
+
+[data-slopmark="flag"]::before {
+  content: "";
+  position: absolute;
+  left: -9px;
+  top: 0.15em;
+  bottom: 0.15em;
+  width: 3px;
+  border-radius: 2px;
+  background: #d9a441;
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+[data-slopmark="flag"]:hover {
+  background-color: rgba(217, 164, 65, 0.08);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where([data-slopmark="flag"]) {
+    transition: none;
+  }
+}

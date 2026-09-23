@@ -1,0 +1,29 @@
+{
+  "manifest_version": 3,
+  "name": "slopmark",
+  "version": "0.1.0",
+  "description": "Subtly marks text on web pages that is obviously AI-written.",
+  "permissions": [
+    "storage",
+    "activeTab"
+  ],
+  "host_permissions": [
+    "https://sleeper.phareim.no/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "css": ["content.css"],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  },
+  "options_page": "options.html"
+}
