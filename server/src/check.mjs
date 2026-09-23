@@ -1,6 +1,11 @@
-import { cacheKey } from './classify.mjs';
+import { cacheKey, isNorwegian } from './classify.mjs';
 
 const round3 = (n) => Math.round(n * 1000) / 1000;
+
+// threshold: a number, or { en, no }. Jev is more cautious on Norwegian, so Norwegian passages
+// get their own, lower threshold (eval/RESULTS.md).
+const thresholdFor = (threshold, text) =>
+  typeof threshold === 'number' ? threshold : isNorwegian(text) ? threshold.no : threshold.en;
 
 export async function checkPassages(
   passages,
@@ -14,7 +19,7 @@ export async function checkPassages(
     const hit = cache.get(cacheKey(text));
     if (hit) {
       const p_ai = round3(hit.p_ai);
-      results[i] = { id, p_ai, flag: p_ai >= threshold, cached: true };
+      results[i] = { id, p_ai, flag: p_ai >= thresholdFor(threshold, text), cached: true };
     } else {
       missIdx.push(i);
     }
@@ -63,7 +68,7 @@ export async function checkPassages(
         cache.bumpToday();
         inFlight--;
       });
-      results[i] = { id, p_ai, flag: p_ai >= threshold, cached: false };
+      results[i] = { id, p_ai, flag: p_ai >= thresholdFor(threshold, text), cached: false };
     }
   }
 

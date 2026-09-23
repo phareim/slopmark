@@ -13,7 +13,7 @@ const human = fs.readFileSync(path.join(DIR, 'human.jsonl'), 'utf8').trim().spli
 const OUT = path.join(DIR, 'ai.jsonl');
 const done = new Set(fs.existsSync(OUT) ? fs.readFileSync(OUT, 'utf8').trim().split('\n').filter(Boolean).map((l) => JSON.parse(l).from) : []);
 
-const KIND = { hn: 'a Hacker News comment', 'wiki-en': 'a Wikipedia article', 'wiki-no': 'en Wikipedia-artikkel', nrk: 'en NRK-nyhetsartikkel' };
+const KIND = { hn: 'a Hacker News comment', 'wiki-en': 'a Wikipedia article', 'wiki-no': 'en Wikipedia-artikkel', nrk: 'en NRK-nyhetsartikkel', diskusjon: 'et innlegg på diskusjon.no (norsk diskusjonsforum)' };
 const STYLES = {
   blog: (s) => `Write a blog-post paragraph (about 120 words) on the topic of the passage below. ${lang(s)}\n\n${s.text}`,
   rewrite: (s) => `Rewrite the passage below in your own words, same length. ${lang(s)}\n\n${s.text}`,

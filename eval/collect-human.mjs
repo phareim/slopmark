@@ -1,7 +1,8 @@
 // Collects human-written passages with a known pre-ChatGPT date (before Nov 2022)
 // into eval/data/human.jsonl. Sources: HN comments, English and Norwegian Wikipedia
-// revisions from 2021, and NRK articles via the Wayback Machine.
-// Usage: node eval/collect-human.mjs
+// revisions from 2021, and NRK articles and diskusjon.no forum posts via the Wayback Machine.
+// Usage: node eval/collect-human.mjs               (all sources, rewrites the file)
+//        node eval/collect-human.mjs diskusjon     (only these sources, appended)
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -72,12 +73,34 @@ async function nrk(n) {
   return out;
 }
 
-const all = [
-  ...(await hn(40)),
-  ...(await wiki('en', 20)),
-  ...(await wiki('no', 20)),
-  ...(await nrk(25)),
-].map((s) => ({ label: 'human', ...s }));
-fs.writeFileSync(path.join(DIR, 'human.jsonl'), all.map((s) => JSON.stringify(s)).join('\n') + '\n');
+// Casual Norwegian: posts from diskusjon.no topics, quotes and signatures stripped.
+async function diskusjon(n) {
+  const cdx = await getJson('https://web.archive.org/cdx/search/cdx?url=diskusjon.no/topic/*&from=2019&to=2021&filter=statuscode:200&filter=mimetype:text/html&collapse=urlkey&limit=3000&output=json');
+  const topics = [...new Set(cdx.slice(1).map((r) => r[2]).filter((u) => !/\/page\/|\?/.test(u)))];
+  const rows = cdx.slice(1).filter((r) => topics.includes(r[2]));
+  const out = [];
+  for (let i = 0; out.length < n && i < rows.length; i += 7) {
+    const [, ts, orig] = rows[i];
+    try {
+      const html = await getText(`https://web.archive.org/web/${ts}id_/${orig}`);
+      const posts = html.split('data-role="commentContent"').slice(1).map((p) => {
+        p = p.slice(p.indexOf('>') + 1);
+        const end = p.search(/data-role="memberSignature"|class="ipsItemControls"|<\/article>/);
+        return decode(p.slice(0, end > 0 ? end : 6000).replace(/<blockquote[\s\S]*?<\/blockquote>/g, ' ')).replace(/\s*Quote\s*$/, '');
+      }).filter(fits);
+      out.push(...posts.slice(0, 2).map((text) => ({ source: 'diskusjon', lang: 'no', text, url: orig })));
+    } catch { /* skip dead snapshot */ }
+    await sleep(300);
+  }
+  return out.slice(0, n);
+}
+
+const SOURCES = { hn: () => hn(40), 'wiki-en': () => wiki('en', 20), 'wiki-no': () => wiki('no', 20), nrk: () => nrk(25), diskusjon: () => diskusjon(40) };
+const only = process.argv.slice(2);
+const all = [];
+for (const name of only.length ? only : Object.keys(SOURCES)) all.push(...(await SOURCES[name]()).map((s) => ({ label: 'human', ...s })));
+const lines = all.map((s) => JSON.stringify(s)).join('\n') + '\n';
+if (only.length) fs.appendFileSync(path.join(DIR, 'human.jsonl'), lines);
+else fs.writeFileSync(path.join(DIR, 'human.jsonl'), lines);
 const counts = all.reduce((m, s) => ((m[s.source] = (m[s.source] || 0) + 1), m), {});
 console.log(all.length, counts);

@@ -29,7 +29,7 @@ if (!key) {
 export const config = {
   port: num('SLOPMARK_PORT', 3029),
   key,
-  threshold: num('SLOPMARK_THRESHOLD', 0.95),
+  threshold: { en: num('SLOPMARK_THRESHOLD', 0.95), no: num('SLOPMARK_THRESHOLD_NO', 0.8) },
   dailyLimit: num('SLOPMARK_DAILY_LIMIT', 5000),
   concurrency: num('SLOPMARK_CONCURRENCY', 6),
 };

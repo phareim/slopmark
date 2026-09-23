@@ -134,3 +134,15 @@ test('concurrency never exceeds the limit', async () => {
   assert.ok(maxLive > 1, `expected parallelism, maxLive=${maxLive}`);
   cache.close();
 });
+
+test('per-language threshold: Norwegian passages use threshold.no', async () => {
+  const cache = openCache(':memory:');
+  const no = 'Dette er et avsnitt på norsk som ikke er skrevet av et menneske, men det er vel ikke så farlig.';
+  const en = 'This is a paragraph in English that was not written by a person, and that is fine for the test.';
+  const res = await checkPassages(
+    [{ id: 'no', text: no }, { id: 'en', text: en }],
+    { ...base, cache, threshold: { en: 0.95, no: 0.8 }, classify: async () => ({ p_ai: 0.85, model: 'fake' }) }
+  );
+  assert.equal(res[0].flag, true);
+  assert.equal(res[1].flag, false);
+});
